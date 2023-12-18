@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "texify"
+version = "0.1.0"
+description = "OCR for latex images"
+authors = ["Vik Paruchuri <vik.paruchuri@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+streamlit = "^1.29.0"
+streamlit-drawable-canvas = "^0.9.3"
+transformers = "^4.36.2"
+torch = "^2.1.2"
+pydantic = "^2.5.2"
+pydantic-settings = "^2.1.0"
+Pillow = "^10.1.0"
+numpy = "^1.26.2"
+pypdfium2 = "^4.25.0"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

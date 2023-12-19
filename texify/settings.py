@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 from dotenv import find_dotenv
 from pydantic import computed_field
 from pydantic_settings import BaseSettings
@@ -8,7 +10,10 @@ class Settings(BaseSettings):
     # General
     TORCH_DEVICE: str = "cpu"
     MAX_TOKENS: int = 512
+    MAX_IMAGE_SIZE: Dict = {"height": 448, "width": 448}
     MODEL_CHECKPOINT: str = "vikp/texify"
+    BATCH_SIZE: int = 4
+    DATA_DIR: str = "data"
 
     @computed_field
     @property

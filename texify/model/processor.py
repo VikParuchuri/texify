@@ -15,12 +15,20 @@ from texify.model.config import VariableDonutSwinConfig
 logger = logging.getLogger()
 
 
+IMAGE_STD = [0.229, 0.224, 0.225]
+IMAGE_MEAN = [0.485, 0.456, 0.406]
+
+
 def load_processor():
     AutoImageProcessor.register(VariableDonutSwinConfig, VariableDonutImageProcessor)
     processor = VariableDonutProcessor.from_pretrained(settings.MODEL_CHECKPOINT)
-    processor.image_processor.max_size = {"height": 896, "width": 672}
-    processor.image_processor.size = [896, 672]
+    processor.image_processor.max_size = settings.MAX_IMAGE_SIZE
+    processor.image_processor.size = [settings.MAX_IMAGE_SIZE["height"], settings.MAX_IMAGE_SIZE["width"]]
+    processor.image_processor.image_mean = IMAGE_MEAN
+    processor.image_processor.image_std = IMAGE_STD
     processor.image_processor.train = False
+
+    processor.tokenizer.model_max_length = settings.MAX_TOKENS
     processor.train = False
     return processor
 
@@ -40,7 +48,7 @@ class VariableDonutImageProcessor(DonutImageProcessor):
     def pil_resize(self, image: PIL.Image.Image, size, resample):
         width, height = image.size
         max_width, max_height = size["width"], size["height"]
-        if width != max_width and height != max_height:
+        if width != max_width or height != max_height:
             # Shrink to fit within dimensions
             width_scale = max_width / width
             height_scale = max_height / height
@@ -50,6 +58,8 @@ class VariableDonutImageProcessor(DonutImageProcessor):
             new_height = min(int(height * scale), max_height)
 
             image = image.resize((new_width, new_height), resample)
+
+        image.thumbnail((max_width, max_height), resample)
 
         assert image.width <= max_width and image.height <= max_height
 
@@ -75,17 +85,7 @@ class VariableDonutImageProcessor(DonutImageProcessor):
         # Convert to float32 for rescale/normalize
         np_images = [img.astype(np.float32) for img in np_images]
 
-        # Rescale and normalize
-        np_images = [
-            self.rescale(img, scale=self.rescale_factor, input_data_format=ChannelDimension.FIRST)
-            for img in np_images
-        ]
-        np_images = [
-            self.normalize(img, mean=self.image_mean, std=self.image_std, input_data_format=ChannelDimension.FIRST)
-            for img in np_images
-        ]
-
-        # Pads with 1. 1 is whitespace.  Normalization is (1 - .5) / .5 .  So whitespace is always 1.0.
+        # Pads with 255 (whitespace)
         # Pad to max size to improve performance
         max_size = self.max_size
         np_images = [
@@ -94,9 +94,19 @@ class VariableDonutImageProcessor(DonutImageProcessor):
                 size=max_size,
                 random_padding=train, # Change amount of padding randomly during training
                 input_data_format=ChannelDimension.FIRST,
-                pad_value=1.0
+                pad_value=255.0
             )
             for image in np_images
+        ]
+
+        # Rescale and normalize
+        np_images = [
+            self.rescale(img, scale=self.rescale_factor, input_data_format=ChannelDimension.FIRST)
+            for img in np_images
+        ]
+        np_images = [
+            self.normalize(img, mean=self.image_mean, std=self.image_std, input_data_format=ChannelDimension.FIRST)
+            for img in np_images
         ]
 
         return np_images
@@ -146,21 +156,6 @@ class VariableDonutImageProcessor(DonutImageProcessor):
         input_data_format: Optional[Union[str, ChannelDimension]] = None,
         pad_value: float = 0.0,
     ) -> np.ndarray:
-        """
-        Pad the image to the specified size.
-
-        Args:
-            image (`np.ndarray`):
-                The image to be padded.
-            size (`Dict[str, int]`):
-                The size `{"height": h, "width": w}` to pad the image to.
-            random_padding (`bool`, *optional*, defaults to `False`):
-                Whether to use random padding or not.
-            data_format (`str` or `ChannelDimension`, *optional*):
-                The data format of the output image. If unset, the same format as the input image is used.
-            input_data_format (`ChannelDimension` or `str`, *optional*):
-                The channel dimension format of the input image. If not provided, it will be inferred.
-        """
         output_height, output_width = size["height"], size["width"]
         input_height, input_width = get_image_size(image, channel_dim=input_data_format)
 

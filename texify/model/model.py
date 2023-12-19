@@ -2,7 +2,7 @@ from torch import nn
 import torch
 from typing import Optional, Tuple
 
-from transformers import DonutSwinPreTrainedModel, AutoModel, VisionEncoderDecoderModel
+from transformers import AutoModel, VisionEncoderDecoderModel
 from transformers.models.donut.modeling_donut_swin import DonutSwinPatchEmbeddings, DonutSwinEmbeddings, DonutSwinModel, \
     DonutSwinEncoder
 
@@ -19,6 +19,7 @@ def load_model():
     model = VisionEncoderDecoderModel.from_pretrained(settings.MODEL_CHECKPOINT, config=config, torch_dtype=dtype)
     model = model.to(device)
     model = model.eval()
+    print(f"Loaded model to {device} with {dtype} dtype")
     return model
 
 

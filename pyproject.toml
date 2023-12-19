@@ -8,7 +8,6 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.10"
 streamlit = "^1.29.0"
-streamlit-drawable-canvas = "^0.9.3"
 transformers = "^4.36.2"
 torch = "^2.1.2"
 pydantic = "^2.5.2"
@@ -17,6 +16,8 @@ Pillow = "^10.1.0"
 numpy = "^1.26.2"
 pypdfium2 = "^4.25.0"
 python-dotenv = "^1.0.0"
+watchdog = "^3.0.0"
+streamlit-drawable-canvas = {git = "https://github.com/VikParuchuri/streamlit-drawable-canvas.git", rev = "develop"}
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.0.0"

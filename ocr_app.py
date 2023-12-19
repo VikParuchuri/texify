@@ -55,10 +55,12 @@ def page_count(pdf_file):
     return len(doc)
 
 
+@st.cache_data()
 def get_canvas_hash(pil_image):
     return hashlib.md5(pil_image.tobytes()).hexdigest()
 
 
+@st.cache_data()
 def get_image_size(pil_image):
     if pil_image is None:
         return 800, 600
@@ -69,7 +71,9 @@ def get_image_size(pil_image):
         width = MAX_WIDTH
     return height, width
 
+
 st.set_page_config(layout="wide")
+col1, col2 = st.columns([.7, .3])
 
 model = load_model_cached()
 processor = load_processor_cached()
@@ -80,10 +84,8 @@ if pdf_file is None:
 
 page_count = page_count(pdf_file)
 page_number = st.sidebar.number_input(f"Page number out of {page_count}:", min_value=1, value=1, max_value=page_count)
+
 pil_image = get_page_image(pdf_file, page_number)
-
-col1, col2 = st.columns([.7, .3])
-
 canvas_hash = get_canvas_hash(pil_image) if pil_image else "canvas"
 
 with col1:
@@ -109,9 +111,8 @@ if canvas_result.json_data is not None:
         boxes["right"] = boxes["left"] + boxes["width"]
         boxes["bottom"] = boxes["top"] + boxes["height"]
         bbox_list = boxes[["left", "top", "right", "bottom"]].values.tolist()
-        page_image = get_page_image(pdf_file, page_number)
         with col2:
-            inferences = [infer_image(page_image, bbox) for bbox in bbox_list]
+            inferences = [infer_image(pil_image, bbox) for bbox in bbox_list]
             for idx, inference in enumerate(inferences):
                 st.markdown(f"### {idx + 1}")
                 st.markdown(inference)

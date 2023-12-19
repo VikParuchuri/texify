@@ -3053,18 +3053,22 @@ snowflake = ["snowflake-connector-python (>=2.8.0)", "snowflake-snowpark-python 
 [[package]]
 name = "streamlit-drawable-canvas"
 version = "0.9.3"
-description = "A Streamlit custom component for a free drawing canvas using Fabric.js."
+description = ""
 optional = false
 python-versions = ">=3.6"
-files = [
-    {file = "streamlit-drawable-canvas-0.9.3.tar.gz", hash = "sha256:a31e581bfd63545ecbca71bc3286c09f0542e4199109d33f56392345996802f5"},
-    {file = "streamlit_drawable_canvas-0.9.3-py3-none-any.whl", hash = "sha256:fbb5e29017d359d5438e327ca0a64d0b337a9f2e1f999cd7593baa5bb8a27c25"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 numpy = "*"
 Pillow = "*"
 streamlit = ">=0.63"
+
+[package.source]
+type = "git"
+url = "https://github.com/VikParuchuri/streamlit-drawable-canvas.git"
+reference = "develop"
+resolved_reference = "c6b9290ddfae8f347c652986cfd844065c6195c5"
 
 [[package]]
 name = "sympy"
@@ -3705,4 +3709,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10"
-content-hash = "1302fb7b55231c886bbe230670164c57fd4f08365c3f508b51f37942cc60d847"
+content-hash = "deb91024bb0358ae6f59e50788281a58d033b5726939c06e97b52254d2c872e3"

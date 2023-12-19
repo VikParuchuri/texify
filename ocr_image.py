@@ -1,21 +1,63 @@
 import argparse
+import os.path
 
 from texify.inference import batch_inference
 from texify.model.model import load_model
 from texify.model.processor import load_processor
 from PIL import Image
+from texify.settings import settings
+from texify.util import is_valid_image
+import json
+
+
+def inference_single_image(image_path, json_path):
+    image = Image.open(image_path)
+    text = batch_inference([image], model, processor)
+    write_data = [{"image_path": image_path, "text": text[0]}]
+    with open(json_path, "w") as f:
+        json_repr = json.dumps(write_data, indent=4)
+        print(json_repr)
+        f.write(json_repr)
+
+
+def inference_image_dir(image_dir, json_path, max=None):
+    image_paths = [os.path.join(image_dir, image_name) for image_name in os.listdir(image_dir)]
+    image_paths = [ip for ip in image_paths if is_valid_image(ip)]
+    if max:
+        image_paths = image_paths[:max]
+
+    write_data = []
+    for i in range(0, len(image_paths), settings.BATCH_SIZE):
+        batch = image_paths[i:i+settings.BATCH_SIZE]
+        images = [Image.open(image_path) for image_path in batch]
+        text = batch_inference(images, model, processor)
+        for image_path, t in zip(batch, text):
+            write_data.append({"image_path": image_path, "text": t})
+
+    with open(json_path, "w") as f:
+        json_repr = json.dumps(write_data, indent=4)
+        print(json_repr)
+        f.write(json_repr)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="OCR an image of a LaTeX equation.")
-    parser.add_argument("image", type=str, help="Path to image to OCR.")
+    parser.add_argument("image", type=str, help="Path to image or folder of images to OCR.")
+    parser.add_argument("--max", type=int, help="Maximum number of images to OCR if a folder is passes.", default=None)
+    parser.add_argument("--json_path", type=str, help="Path to JSON file to save results to.", default=os.path.join(settings.DATA_DIR, "results.json"))
     args = parser.parse_args()
 
     image_path = args.image
     model = load_model()
     processor = load_processor()
 
-    image = Image.open(image_path)
-    text = batch_inference([image], model, processor)
+    json_path = os.path.abspath(args.json_path)
 
-    print(text[0])
+    if os.path.isfile(image_path):
+        inference_single_image(image_path, json_path)
+    else:
+        inference_image_dir(image_path, json_path, args.max)
+
+    print(f"Wrote results to {json_path}")
+
 

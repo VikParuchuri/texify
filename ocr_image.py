@@ -10,7 +10,7 @@ from texify.util import is_valid_image
 import json
 
 
-def inference_single_image(image_path, json_path):
+def inference_single_image(image_path, json_path, model, processor):
     image = Image.open(image_path)
     text = batch_inference([image], model, processor)
     write_data = [{"image_path": image_path, "text": text[0]}]
@@ -20,7 +20,7 @@ def inference_single_image(image_path, json_path):
         f.write(json_repr)
 
 
-def inference_image_dir(image_dir, json_path, max=None):
+def inference_image_dir(image_dir, json_path, model, processor, max=None):
     image_paths = [os.path.join(image_dir, image_name) for image_name in os.listdir(image_dir)]
     image_paths = [ip for ip in image_paths if is_valid_image(ip)]
     if max:
@@ -40,7 +40,7 @@ def inference_image_dir(image_dir, json_path, max=None):
         f.write(json_repr)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="OCR an image of a LaTeX equation.")
     parser.add_argument("image", type=str, help="Path to image or folder of images to OCR.")
     parser.add_argument("--max", type=int, help="Maximum number of images to OCR if a folder is passes.", default=None)
@@ -54,10 +54,15 @@ if __name__ == "__main__":
     json_path = os.path.abspath(args.json_path)
 
     if os.path.isfile(image_path):
-        inference_single_image(image_path, json_path)
+        inference_single_image(image_path, json_path, model, processor)
     else:
-        inference_image_dir(image_path, json_path, args.max)
+        inference_image_dir(image_path, json_path, model, processor, args.max)
 
     print(f"Wrote results to {json_path}")
+
+
+if __name__ == "__main__":
+    main()
+
 
 

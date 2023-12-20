@@ -1,18 +1,8 @@
 # Texify
 
-Texify converts equations and surrounding text into markdown with embedded Latex blocks that can be parsed by MathJax.  You can use a web app to select your equations from pdf files, or run it on a folder of images.
-
-# Community
+Texify converts equations and surrounding text into Markdown with Latex math blocks ($$ and $ are delimiters).  It will work with images or pdfs, and can run on CPU, GPU, or MPS.
 
 [Discord](https://discord.gg//KuZwXNGnfH) is where we discuss future development.
-
-# Limitations
-
-OCR is complicated, and texify is not perfect.  Here are some known limitations:
-
-- It will OCR equations and surrounding text, but is not good for general purpose OCR.  Think sections of a page instead of a whole page.
-- It is English-only for now.
-- The output format will be markdown with embedded mathjax for equations.  It will not be pure latex.
 
 # Installation
 
@@ -21,6 +11,7 @@ This has been tested on Mac and Linux (Ubuntu and Debian).  You'll need python 3
 - `git clone https://github.com/VikParuchuri/texify.git`
 - `cd texify`
 - `poetry install`
+- Set your `TORCH_DEVICE` according to your system (see below).
 
 The first time you run it, model weights will be automatically downloaded.
 
@@ -50,7 +41,20 @@ I've included a streamlit app that can be used to select equations from PDF file
 streamlit run ocr_app.py
 ```
 
-This app will allow you to select the specific equations you want to convert to Latex on each page, and copy out the results.
+The app will allow you to select the specific equations you want to convert on each page, then render the results with Katex and enable easy copying.
+
+# Limitations
+
+OCR is complicated, and texify is not perfect.  Here are some known limitations:
+
+- It will OCR equations and surrounding text, but is not good for general purpose OCR.  Think sections of a page instead of a whole page.
+- Texify was mostly trained with 96 DPI images, and only at a max 420x420 resolution.  Make sure you don't feed it images that are too large.
+- It's English-only for now.
+- The output format will be markdown with embedded latex for equations (close to Github flavored markdown).  It will not be pure latex.
+
+# Training
+
+Texify was trained on latex images and paired equations from across the web.  It includes the [im2latex](https://github.com/guillaumegenthial/im2latex) dataset.  Training happened on 4x A6000 GPUs for 3 days.
 
 # Commercial usage
 
@@ -58,4 +62,9 @@ This model is trained on top of the openly licensed [Donut](https://huggingface.
 
 # Thanks
 
-This work would not have been possible without lots of amazing open source work.  I particularly want to acknowledge Nougat and Latex-OCR by Lukas Blecher, which were the inspiration for this project.
+This work would not have been possible without lots of amazing open source work.  I particularly want to acknowledge Lukas Blecher, whose work on Nougat and Latex-OCR was key for this project.
+
+- [im2latex](https://github.com/guillaumegenthial/im2latex)
+- [Donut](https://huggingface.co/naver-clova-ix/donut-base) from Naver
+- [Nougat](https://github.com/facebookresearch/nougat)
+- [Latex-OCR](https://github.com/lukas-blecher/LaTeX-OCR)

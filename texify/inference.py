@@ -1,5 +1,5 @@
-import torch
 from texify.settings import settings
+from texify.output import postprocess
 
 
 def batch_inference(images, model, processor):
@@ -15,4 +15,5 @@ def batch_inference(images, model, processor):
     )
 
     generated_text = processor.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
+    generated_text = [postprocess(text) for text in generated_text]
     return generated_text

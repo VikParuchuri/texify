@@ -10,9 +10,14 @@ import pypdfium2
 from texify.inference import batch_inference
 from texify.model.model import load_model
 from texify.model.processor import load_processor
+import subprocess
+import re
 
 MAX_WIDTH = 1000
 
+
+def replace_katex_invalid(string):
+    return re.sub(r'\\tag\{.*?\}', '', string)
 
 @st.cache_resource()
 def load_model_cached():
@@ -115,6 +120,7 @@ if canvas_result.json_data is not None:
             inferences = [infer_image(pil_image, bbox) for bbox in bbox_list]
             for idx, inference in enumerate(inferences):
                 st.markdown(f"### {idx + 1}")
-                st.markdown(inference)
+                katex_markdown = replace_katex_invalid(inference)
+                st.markdown(katex_markdown)
                 st.code(inference)
                 st.divider()

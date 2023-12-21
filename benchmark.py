@@ -146,6 +146,7 @@ def main():
 
     source_path = os.path.abspath(args.data_path)
     result_path = os.path.abspath(args.result_path)
+    os.makedirs(os.path.dirname(result_path), exist_ok=True)
     model = load_model()
     processor = load_processor()
 

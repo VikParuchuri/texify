@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "texify"
-version = "0.1.0"
+version = "0.1.4"
 description = "OCR for latex images"
 authors = ["Vik Paruchuri <vik.paruchuri@gmail.com>"]
 readme = "README.md"
@@ -26,15 +26,16 @@ numpy = "^1.26.2"
 pypdfium2 = "^4.25.0"
 python-dotenv = "^1.0.0"
 watchdog = "^3.0.0"
-streamlit-drawable-canvas = {git = "https://github.com/VikParuchuri/streamlit-drawable-canvas.git", rev = "develop"}
 ftfy = "^6.1.3"
 tabulate = "^0.9.0"
+streamlit-drawable-canvas-jsretry = "^0.9.3"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.0.0"
 evaluate = "^0.4.1"
 rapidfuzz = "^3.5.2"
 pyperclip = "^1.8.2"
+nltk = "^3.8.1"
 
 [tool.poetry.scripts]
 texify = "ocr_image:main"

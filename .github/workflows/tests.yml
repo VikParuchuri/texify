@@ -1,0 +1,34 @@
+name: Integration test
+
+on: [push]
+
+env:
+  TORCH_DEVICE: "cpu"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: Install python dependencies
+        run: |
+          pip install poetry
+          poetry install
+          poetry remove torch
+          poetry run pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Download benchmark data
+        run: |
+          wget -O benchmark_data.zip "https://drive.google.com/uc?export=download&id=1dbY0kBq2SUa885gmbLPUWSRzy5K7O5XJ"
+          unzip benchmark_data.zip
+          mv bench_data.json data/bench_data.json
+      - name: Run benchmark test
+        run: |
+          poetry run texify_benchmark --max 16
+          poetry run python scripts/verify_benchmark_scores.py data/bench_results.json
+        
+          
+

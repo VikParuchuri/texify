@@ -1,25 +1,15 @@
 # Texify
 
-Texify converts equations and surrounding text into markdown with LaTeX math that can be rendered by MathJax ($$ and $ are delimiters).  It will work with images or pdfs, and can run on CPU, GPU, or MPS.
+Texify converts equations and surrounding text into markdown and LaTeX that can be rendered by MathJax ($$ and $ are delimiters).  It will work with images or pdfs, and can run on CPU, GPU, or MPS.
 
-https://github.com/VikParuchuri/texify/assets/913340/39b1f139-872f-4ae8-9f31-39e396953bd9
+https://github.com/VikParuchuri/texify/assets/913340/882022a6-020d-4796-af02-67cb77bc084c
 
-> **Example**
-> 
-> ![image](data/examples/0.png)
-> 
-> **Detected Text** The potential $V_{i}$ of cell $\mathcal{C}_{j}$ centred at position $\mathbf{r}_{i}$ is related to the surface charge densities $\sigma_{j}$ of cells $\mathcal{E}_{j}$ $j\in[1,N]$ through the superposition principle as:
-> 
-> $$V_{i}\,=\,\sum_{j=0}^{N}\,\frac{\sigma_{j}}{4\pi\varepsilon_{0}}\,\int_{\mathcal{E}_{j}}\frac{1}{\left|\mathbf{r}_{i}-\mathbf{r}^{\prime}\right|}\,\mathrm{d}^{2}\mathbf{r}^{\prime}\,=\,\sum_{j=0}^{N}\,Q_{ij}\,\sigma_{j},$$
-> 
-> where the integral over the surface of cell $\mathcal{C}_{j}$ only depends on $ \mathcal{C}_{j} $ shape and on the relative position of the target point $\mathbf{r}_{i}$ with respect to $\mathcal{C}_{j}$ location, as $\sigma_{j}$ is assumed constant over the whole surface of cell $\mathcal{C}_{j}$.
+The closest open source comparisons to texify are [pix2tex](https://github.com/lukas-blecher/LaTeX-OCR) and [nougat](https://github.com/facebookresearch/nougat), although they're designed for different purposes:
 
-The closest open source comparisons to texify are pix2tex and nougat, although they're designed for different purposes:
+- Pix2tex is designed for block LaTeX equations, and hallucinates more on text.  Texify can work with inline equations and text.
+- Nougat is designed to OCR entire pages, and hallucinates more on small images. Texify is optimized for equations and small page regions.
 
-- Compared to [pix2tex](https://github.com/lukas-blecher/LaTeX-OCR), texify can detect text and inline equations. Pix2tex is designed for block LaTeX equations, and hallucinates more on text.
-- Compared to [nougat](https://github.com/facebookresearch/nougat), texify is optimized for equations and small page regions.  Nougat is designed to OCR entire pages, and hallucinates more on small images.
-
-I created texify to render equations in [marker](https://github.com/VikParuchuri/marker), but realized it could also be valuable on its own.
+Pix2tex is trained on im2latex, and nougat is trained on arxiv.  Texify is trained on a broader set of web data, and works on a range of images.
 
 See more details in the [benchmarks](#benchmarks) section.
 
@@ -27,43 +17,81 @@ See more details in the [benchmarks](#benchmarks) section.
 
 [Discord](https://discord.gg//KuZwXNGnfH) is where we discuss future development.
 
+## Examples
+
+**Note** I added spaces after _ symbols because [Github math formatting is broken](https://github.com/github/markup/issues/1575).
+
+![Example 0](data/examples/0.png)
+
+**Detected Text** The potential $V_{i}$ of cell $\mathcal{C}_ {j}$ centred at position $\mathbf{r}_ {i}$ is related to the surface charge densities $\sigma_ {j}$ of cells $\mathcal{E}_ {j}$ $j\in[1,N]$ through the superposition principle as:
+
+$$V_ {i}\,=\,\sum_ {j=0}^{N}\,\frac{\sigma_ {j}}{4\pi\varepsilon_ {0}}\,\int_{\mathcal{E}_ {j}}\frac{1}{\left|\mathbf{r}_ {i}-\mathbf{r}^{\prime}\right|}\,\mathrm{d}^{2}\mathbf{r}^{\prime}\,=\,\sum_{j=0}^{N}\,Q_ {ij}\,\sigma_{j},$$
+
+where the integral over the surface of cell $\mathcal{C}_ {j}$ only depends on $\mathcal{C}{j}$ shape and on the relative position of the target point $\mathbf{r}_ {i}$ with respect to $\mathcal{C}_ {j}$ location, as $\sigma_ {j}$ is assumed constant over the whole surface of cell $\mathcal{C}_ {j}$.
+
+| Image                      | OCR Markdown              |
+|----------------------------|---------------------------|
+| [1](data/examples/100.png) | [1](data/examples/100.md) |
+| [2](data/examples/300.png) | [2](data/examples/300.md) |
+| [3](data/examples/400.png) | [3](data/examples/400.md) |
+
 # Installation
 
-This has been tested on Mac and Linux (Ubuntu and Debian).  You'll need python 3.10+ and [poetry](https://python-poetry.org/docs/#installing-with-the-official-installer).
+This has been tested on Mac and Linux (Ubuntu and Debian).  You'll need python 3.10+ and PyTorch. You may need to install the CPU version of torch first if you're not using a Mac or a GPU machine.  See [here](https://pytorch.org/get-started/locally/) for more details.
 
-- `git clone https://github.com/VikParuchuri/texify.git`
-- `cd texify`
-- `poetry install --without dev` # This skips the dev dependencies
+`pip install texify`
 
 Model weights will automatically download the first time you run it.
 
 # Usage
 
-First, some configuration:
-
-- Inspect the settings in `texify/settings.py`.  You can override any settings in a `local.env` file, or by setting environment variables.
+- Inspect the settings in `texify/settings.py`.  You can override any settings with environment variables.
 - Your torch device will be automatically detected, but you can override this.  For example, `TORCH_DEVICE=cuda` or `TORCH_DEVICE=mps`.
 
 ## App for interactive conversion
 
-I've included a streamlit app that lets you interactively select and convert equations from images or PDF files.  To run it, do this:
+I've included a streamlit app that lets you interactively select and convert equations from images or PDF files.  Run it with:
 
 ```
-streamlit run ocr_app.py
+texify_gui
 ```
 
 The app will allow you to select the specific equations you want to convert on each page, then render the results with KaTeX and enable easy copying.
 
-## Convert an image or directory of images
+## Convert images
 
-Run `ocr_image.py`, like this:
+You can OCR a single image or a folder of images with:
 
 ```
-python ocr_image.py /path/to/folder_or_file --max 8 --json_path results.json
+texify /path/to/folder_or_file --max 8 --json_path results.json
 ```
 
 - `--max` is how many images in the folder to convert at most.  Omit this to convert all images in the folder.
 - `--json_path` is an optional path to a json file where the results will be saved.  If you omit this, the results will be saved to `data/results.json`.
+
+## Import and run
+
+You can import texify and run it in python code:
+
+```
+from texify.inference import batch_inference
+from texify.model.model import load_model
+from texify.model.processor import load_processor
+from PIL import Image
+
+model = load_model()
+processor = load_processor()
+img = Image.open("test.png") # Your image name here
+results = batch_inference([img], model, processor)
+```
+
+# Manual install
+
+If you want to develop texify, you can install it manually:
+
+- `git clone https://github.com/VikParuchuri/texify.git`
+- `cd texify`
+- `poetry install` # Installs main and dev dependencies
 
 # Limitations
 
@@ -76,30 +104,39 @@ OCR is complicated, and texify is not perfect.  Here are some known limitations:
 
 # Benchmarks
 
-Benchmarking OCR quality is hard - you ideally need a parallel corpus that models haven't been trained on.  I've sampled some images from across a range of sources (web, arxiv, im2latex) to create a representative benchmark set.
+Benchmarking OCR quality is hard - you ideally need a parallel corpus that models haven't been trained on.  I sampled from arxiv and im2latex to create the benchmark set.
 
-Of these, here is what is known about the training data:
+![Benchmark results](data/images/texify_bench.png)
 
-- Nougat was trained on arxiv.
-- Pix2tex was trained on im2latex and web images.
-- Texify was trained on im2latex and web images.
+Each model is trained on one of the benchmark tasks:
+
+- Nougat was trained on arxiv, possibly the images in the benchmark.
+- Pix2tex was trained on im2latex.
+- Texify was trained on im2latex. It was trained on arxiv, but not the images in the benchmark.
+
+Although this makes the benchmark results biased, it does seem like a good compromise, since nougat and pix2tex don't work as well out of domain.  Note that neither pix2tex or nougat is really designed for this task (OCR inline equations and text), so this is not a perfect comparison.
+
+| Model   | BLEU ⬆       | METEOR ⬆     | Edit Distance ⬇ |
+|---------|--------------|--------------|-----------------|
+| pix2tex | 0.382659     | 0.543363     | 0.352533        |
+| nougat  | 0.697667     | 0.668331     | 0.288159        |
+| texify  | **0.837895** | **0.865492** | **0.0842209**   |
 
 ## Running your own benchmarks
 
 You can benchmark the performance of texify on your machine.  
 
-- Clone the repo if you haven't already (see above for manual installation instructions)
-- Install dev dependencies with `poetry install`
-  - If you want to use pix2tex, run `pip install pix2tex`
-  - If you want to use nougat, run `pip install nougat-ocr`
-- Download the benchmark data [here]() and put it in the `data` folder.
+- Follow the manual install instructions above.
+- If you want to use pix2tex, run `pip install pix2tex`
+- If you want to use nougat, run `pip install nougat-ocr`
+- Download the benchmark data [here](https://drive.google.com/file/d/1dbY0kBq2SUa885gmbLPUWSRzy5K7O5XJ/view?usp=sharing) and put it in the `data` folder.
 - Run `benchmark.py` like this:
 
 ```
 python benchmark.py --max 100 --pix2tex --nougat --data_path data/bench_data.json --result_path data/bench_results.json
 ```
 
-This will benchmark marker against Latex-OCR.  It will do batch inference with texify, but not with Latex-OCR, since I couldn't find an option for batching.
+This will benchmark marker against pix2tex and nougat.  It will do batch inference with texify and nougat, but not with pix2tex, since I couldn't find an option for batching.
 
 - `--max` is how many benchmark images to convert at most.
 - `--data_path` is the path to the benchmark data.  If you omit this, it will use the default path.
@@ -109,17 +146,17 @@ This will benchmark marker against Latex-OCR.  It will do batch inference with t
 
 # Training
 
-Texify was trained on latex images and paired equations from across the web.  It includes the [im2latex](https://github.com/guillaumegenthial/im2latex) dataset.  Training happened on 4x A6000 GPUs for 3 days.
+Texify was trained on latex images and paired equations from across the web.  It includes the [im2latex](https://github.com/guillaumegenthial/im2latex) dataset.  Training happened on 4x A6000s for 2 days (~6 epochs).
 
 # Commercial usage
 
-This model is trained on top of the openly licensed [Donut](https://huggingface.co/naver-clova-ix/donut-base) model, and thus can be used for commercial purposes.
+This model is trained on top of the openly licensed [Donut](https://huggingface.co/naver-clova-ix/donut-base) model, and thus can be used for commercial purposes.  Model weights are licensed under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) license.
 
 # Thanks
 
-This work would not have been possible without lots of amazing open source work.  I particularly want to acknowledge Lukas Blecher, whose work on Nougat and Latex-OCR was key for this project.  I learned a lot from his code, and used parts of it for texify.
+This work would not have been possible without lots of amazing open source work.  I particularly want to acknowledge [Lukas Blecher](https://github.com/lukas-blecher), whose work on Nougat and pix2tex was key for this project.  I learned a lot from his code, and used parts of it for texify.
 
 - [im2latex](https://github.com/guillaumegenthial/im2latex) - one of the datasets used for training
 - [Donut](https://huggingface.co/naver-clova-ix/donut-base) from Naver, the base model for texify
-- [Nougat](https://github.com/facebookresearch/nougat) - I used the tokenized from Nougat
+- [Nougat](https://github.com/facebookresearch/nougat) - I used the tokenizer from Nougat
 - [Latex-OCR](https://github.com/lukas-blecher/LaTeX-OCR) - The original open source Latex OCR project

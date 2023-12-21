@@ -9,6 +9,7 @@ import pypdfium2
 from texify.inference import batch_inference
 from texify.model.model import load_model
 from texify.model.processor import load_processor
+from texify.settings import settings
 import subprocess
 import re
 from PIL import Image
@@ -30,9 +31,9 @@ def load_processor_cached():
 
 
 @st.cache_data()
-def infer_image(pil_image, bbox):
+def infer_image(pil_image, bbox, temperature):
     input_img = pil_image.crop(bbox)
-    model_output = batch_inference([input_img], model, processor)
+    model_output = batch_inference([input_img], model, processor, temperature=temperature)
     return model_output[0]
 
 
@@ -85,7 +86,9 @@ st.set_page_config(layout="wide")
 
 top_message = """### Texify
 
-After the model loads, upload an image or a pdf, then draw a box around the equation or text you want to OCR by clicking and dragging. Texify will convert it to Markdown with LaTeX math on the right.  If you have already cropped your image, select "OCR image" in the sidebar instead.
+After the model loads, upload an image or a pdf, then draw a box around the equation or text you want to OCR by clicking and dragging. Texify will convert it to Markdown with LaTeX math on the right. If you don't get good results, try selecting a slightly different box, or changing the temperature value.
+
+If you have already cropped your image, select "OCR image" in the sidebar instead.
 """
 
 st.markdown(top_message)
@@ -108,6 +111,8 @@ if "pdf" in filetype:
 else:
     pil_image = get_uploaded_image(in_file)
     whole_image = st.sidebar.button("OCR image")
+
+temperature = st.sidebar.slider("Generation temperature:", min_value=0.0, max_value=1.0, value=0.0, step=0.05)
 
 canvas_hash = get_canvas_hash(pil_image) if pil_image else "canvas"
 
@@ -140,7 +145,7 @@ if canvas_result.json_data is not None or whole_image:
 
     if bbox_list:
         with col2:
-            inferences = [infer_image(pil_image, bbox) for bbox in bbox_list]
+            inferences = [infer_image(pil_image, bbox, temperature) for bbox in bbox_list]
             for idx, inference in enumerate(reversed(inferences)):
                 st.markdown(f"### {len(inferences) - idx}")
                 katex_markdown = replace_katex_invalid(inference)

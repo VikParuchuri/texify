@@ -14,9 +14,8 @@ def inference_single_image(image_path, json_path, model, processor):
     image = Image.open(image_path)
     text = batch_inference([image], model, processor)
     write_data = [{"image_path": image_path, "text": text[0]}]
-    with open(json_path, "w") as f:
+    with open(json_path, "w+") as f:
         json_repr = json.dumps(write_data, indent=4)
-        print(json_repr)
         f.write(json_repr)
 
 
@@ -34,9 +33,8 @@ def inference_image_dir(image_dir, json_path, model, processor, max=None):
         for image_path, t in zip(batch, text):
             write_data.append({"image_path": image_path, "text": t})
 
-    with open(json_path, "w") as f:
+    with open(json_path, "w+") as f:
         json_repr = json.dumps(write_data, indent=4)
-        print(json_repr)
         f.write(json_repr)
 
 
@@ -52,6 +50,7 @@ def main():
     processor = load_processor()
 
     json_path = os.path.abspath(args.json_path)
+    os.makedirs(os.path.dirname(json_path), exist_ok=True)
 
     if os.path.isfile(image_path):
         inference_single_image(image_path, json_path, model, processor)

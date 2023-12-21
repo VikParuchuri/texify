@@ -1,6 +1,7 @@
 import argparse
 import os.path
 import random
+import time
 from functools import partial
 
 import evaluate
@@ -78,7 +79,11 @@ def inference_pix2tex(source_data):
     images = load_images(source_data)
     write_data = []
     for i in range(len(images)):
-        text = model(images[i])
+        try:
+            text = model(images[i])
+        except ValueError:
+            # Happens when resize fails
+            text = ""
         write_data.append({"text": text, "equation": source_data[i]["equation"]})
 
     return write_data
@@ -90,7 +95,7 @@ def image_to_bmp(image):
     return img_out
 
 
-def inference_nougat(source_data, batch_size=2):
+def inference_nougat(source_data, batch_size=1):
     import torch
     from nougat.postprocessing import markdown_compatible
     from nougat.utils.checkpoint import get_checkpoint
@@ -105,7 +110,7 @@ def inference_nougat(source_data, batch_size=2):
 
     ckpt = get_checkpoint(None, model_tag="0.1.0-small")
     model = NougatModel.from_pretrained(ckpt)
-    if settings.TORCH_DEVICE != "cpu":
+    if settings.TORCH_DEVICE_MODEL != "cpu":
         move_to_device(model, bf16=settings.CUDA, cuda=settings.CUDA)
     model.eval()
 
@@ -114,6 +119,7 @@ def inference_nougat(source_data, batch_size=2):
         partial(model.encoder.prepare_input, random_padding=False),
     )
 
+    # Batch sizes higher than 1 explode memory usage on CPU/MPS
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,
@@ -150,7 +156,9 @@ def main():
         random.seed(1)
         source_data = random.sample(source_data, args.max)
 
+    start = time.time()
     predictions = inference_texify(source_data, model, processor)
+    times = {"texify": time.time() - start}
     text = [normalize_text(p["text"]) for p in predictions]
     references = [normalize_text(p["equation"]) for p in predictions]
 
@@ -164,7 +172,10 @@ def main():
     }
 
     if args.pix2tex:
+        start = time.time()
         predictions = inference_pix2tex(source_data)
+        times["pix2tex"] = time.time() - start
+
         p_text = [normalize_text(p["text"]) for p in predictions]
 
         p_scores = score_text(p_text, references)
@@ -175,7 +186,9 @@ def main():
         }
 
     if args.nougat:
+        start = time.time()
         predictions = inference_nougat(source_data)
+        times["nougat"] = time.time() - start
         n_text = [normalize_text(p) for p in predictions]
 
         n_scores = score_text(n_text, references)
@@ -187,16 +200,18 @@ def main():
 
     score_table = []
     score_headers = ["bleu", "meteor", "edit"]
-    score_dirs = ["⬆", "⬆", "⬇"]
+    score_dirs = ["⬆", "⬆", "⬇", "⬇"]
 
     for method in write_data.keys():
-        score_table.append([method, *[write_data[method]["scores"][h] for h in score_headers]])
+        score_table.append([method, *[write_data[method]["scores"][h] for h in score_headers], times[method]])
 
+    score_headers.append("time taken (s)")
     score_headers = [f"{h} {d}" for h, d in zip(score_headers, score_dirs)]
     print()
     print(tabulate(score_table, headers=["Method", *score_headers]))
     print()
-    print("Higher is better for BLEU and METEOR, lower is better for edit distance.")
+    print("Higher is better for BLEU and METEOR, lower is better for edit distance and time taken.")
+    print("Note that pix2tex is unbatched (I couldn't find a batch inference method in the docs), so time taken is higher than it should be.")
 
     with open(result_path, "w") as f:
         json.dump(write_data, f, indent=4)

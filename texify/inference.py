@@ -6,7 +6,7 @@ def batch_inference(images, model, processor):
     images = [image.convert("RGB") for image in images]
     encodings = processor(images=images, return_tensors="pt", add_special_tokens=False)
     pixel_values = encodings["pixel_values"].to(settings.MODEL_DTYPE)
-    pixel_values = pixel_values.to(settings.TORCH_DEVICE)
+    pixel_values = pixel_values.to(settings.TORCH_DEVICE_MODEL)
 
     generated_ids = model.generate(
         pixel_values=pixel_values,

@@ -15,7 +15,7 @@ def load_model():
     AutoModel.register(VariableDonutSwinConfig, VariableDonutSwinModel)
 
     dtype = settings.MODEL_DTYPE
-    device = settings.TORCH_DEVICE
+    device = settings.TORCH_DEVICE_MODEL
     model = VisionEncoderDecoderModel.from_pretrained(settings.MODEL_CHECKPOINT, config=config, torch_dtype=dtype)
     model = model.to(device)
     model = model.eval()

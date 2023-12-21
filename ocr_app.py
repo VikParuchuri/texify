@@ -85,7 +85,7 @@ st.set_page_config(layout="wide")
 
 top_message = """### Texify
 
-Upload an image or a pdf, then draw a box around the equation or text you want to OCR by clicking and dragging. Texify will convert it to Markdown with LaTeX math on the right.  If you have already cropped your image, select "OCR image" in the sidebar instead.
+After the model loads, upload an image or a pdf, then draw a box around the equation or text you want to OCR by clicking and dragging. Texify will convert it to Markdown with LaTeX math on the right.  If you have already cropped your image, select "OCR image" in the sidebar instead.
 """
 
 st.markdown(top_message)

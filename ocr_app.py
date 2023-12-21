@@ -1,7 +1,6 @@
 import io
 
 import pandas as pd
-from PIL import Image
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 import hashlib
@@ -12,6 +11,7 @@ from texify.model.model import load_model
 from texify.model.processor import load_processor
 import subprocess
 import re
+from PIL import Image
 
 MAX_WIDTH = 1000
 
@@ -55,12 +55,16 @@ def get_page_image(pdf_file, page_num, dpi=96):
 
 
 @st.cache_data()
+def get_uploaded_image(in_file):
+    return Image.open(in_file).convert("RGB")
+
+
+@st.cache_data()
 def page_count(pdf_file):
     doc = open_pdf(pdf_file)
     return len(doc)
 
 
-@st.cache_data()
 def get_canvas_hash(pil_image):
     return hashlib.md5(pil_image.tobytes()).hexdigest()
 
@@ -78,19 +82,33 @@ def get_image_size(pil_image):
 
 
 st.set_page_config(layout="wide")
+
+top_message = """### Texify
+
+Upload an image or a pdf, then draw a box around the equation or text you want to OCR by clicking and dragging. Texify will convert it to Markdown with LaTeX math on the right.  If you have already cropped your image, select "OCR image" in the sidebar instead.
+"""
+
+st.markdown(top_message)
 col1, col2 = st.columns([.7, .3])
 
 model = load_model_cached()
 processor = load_processor_cached()
 
-pdf_file = st.sidebar.file_uploader("PDF file:", type=["pdf"])
-if pdf_file is None:
+in_file = st.sidebar.file_uploader("PDF file or image:", type=["pdf", "png", "jpg", "jpeg", "gif", "webp"])
+if in_file is None:
     st.stop()
 
-page_count = page_count(pdf_file)
-page_number = st.sidebar.number_input(f"Page number out of {page_count}:", min_value=1, value=1, max_value=page_count)
+filetype = in_file.type
+whole_image = False
+if "pdf" in filetype:
+    page_count = page_count(in_file)
+    page_number = st.sidebar.number_input(f"Page number out of {page_count}:", min_value=1, value=1, max_value=page_count)
 
-pil_image = get_page_image(pdf_file, page_number)
+    pil_image = get_page_image(in_file, page_number)
+else:
+    pil_image = get_uploaded_image(in_file)
+    whole_image = st.sidebar.button("OCR image")
+
 canvas_hash = get_canvas_hash(pil_image) if pil_image else "canvas"
 
 with col1:
@@ -109,17 +127,22 @@ with col1:
         key=canvas_hash,
     )
 
-if canvas_result.json_data is not None:
+if canvas_result.json_data is not None or whole_image:
     objects = pd.json_normalize(canvas_result.json_data["objects"])  # need to convert obj to str because PyArrow
+    bbox_list = None
     if objects.shape[0] > 0:
         boxes = objects[objects["type"] == "rect"][["left", "top", "width", "height"]]
         boxes["right"] = boxes["left"] + boxes["width"]
         boxes["bottom"] = boxes["top"] + boxes["height"]
         bbox_list = boxes[["left", "top", "right", "bottom"]].values.tolist()
+    if whole_image:
+        bbox_list = [(0, 0, pil_image.width, pil_image.height)]
+
+    if bbox_list:
         with col2:
             inferences = [infer_image(pil_image, bbox) for bbox in bbox_list]
-            for idx, inference in enumerate(inferences):
-                st.markdown(f"### {idx + 1}")
+            for idx, inference in enumerate(reversed(inferences)):
+                st.markdown(f"### {len(inferences) - idx}")
                 katex_markdown = replace_katex_invalid(inference)
                 st.markdown(katex_markdown)
                 st.code(inference)

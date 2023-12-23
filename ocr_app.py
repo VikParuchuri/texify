@@ -18,7 +18,10 @@ MAX_WIDTH = 1000
 
 
 def replace_katex_invalid(string):
-    return re.sub(r'\\tag\{.*?\}', '', string)
+    # KaTeX cannot render all LaTeX, so we need to replace some things
+    string = re.sub(r'\\tag\{.*?\}', '', string)
+    string = re.sub(r'\\Big\{(.*?)\}|\\big\{(.*?)\}', r'\1\2', string)
+    return string
 
 @st.cache_resource()
 def load_model_cached():
@@ -86,7 +89,7 @@ st.set_page_config(layout="wide")
 
 top_message = """### Texify
 
-After the model loads, upload an image or a pdf, then draw a box around the equation or text you want to OCR by clicking and dragging. Texify will convert it to Markdown with LaTeX math on the right. If you don't get good results, try selecting a slightly different box, or changing the temperature value.
+After the model loads, upload an image or a pdf, then draw a box around the equation or text you want to OCR by clicking and dragging. Texify will convert it to Markdown with LaTeX math on the right.
 
 If you have already cropped your image, select "OCR image" in the sidebar instead.
 """
@@ -152,3 +155,13 @@ if canvas_result.json_data is not None or whole_image:
                 st.markdown(katex_markdown)
                 st.code(inference)
                 st.divider()
+
+with col2:
+    tips = """
+    ### Usage tips
+    - Don't make your boxes too small or too large.  See the examples and the video in the [README](https://github.com/vikParuchuri/texify) for more info.
+    - Texify is sensitive to how you draw the box around the text you want to OCR. If you get bad results, try selecting a slightly different box, or splitting the box into multiple.
+    - You can try changing the temperature value on the left if you don't get good results.  This controls how "creative" the model is.
+    - Sometimes KaTeX won't be able to render an equation (red error text), but it will still be valid LaTeX.  You can copy the LaTeX and render it elsewhere.
+    """
+    st.markdown(tips)

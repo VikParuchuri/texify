@@ -54,6 +54,12 @@ Model weights will automatically download the first time you run it.
 - Inspect the settings in `texify/settings.py`.  You can override any settings with environment variables.
 - Your torch device will be automatically detected, but you can override this.  For example, `TORCH_DEVICE=cuda` or `TORCH_DEVICE=mps`.
 
+## Usage tips
+
+- Don't make your boxes too small or too large.  See the examples and the video above for good crops.
+- Texify is sensitive to how you draw the box around the text you want to OCR. If you get bad results, try selecting a slightly different box, or splitting the box into 2+.  You can also try changing the `TEMPERATURE` setting.
+- Sometimes, KaTeX won't be able to render an equation (red error), but it will still be valid LaTeX.  You can copy the LaTeX and render it elsewhere.
+
 ## App for interactive conversion
 
 I've included a streamlit app that lets you interactively select and convert equations from images or PDF files.  Run it with:

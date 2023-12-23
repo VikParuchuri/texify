@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "texify"
-version = "0.1.4"
+version = "0.1.6"
 description = "OCR for latex images"
 authors = ["Vik Paruchuri <vik.paruchuri@gmail.com>"]
 readme = "README.md"

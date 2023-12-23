@@ -1,15 +1,17 @@
 # Texify
 
-Texify converts equations and surrounding text into markdown and LaTeX that can be rendered by MathJax ($$ and $ are delimiters).  It will work with images or pdfs, and can run on CPU, GPU, or MPS.
+Texify is an OCR model that converts images or pdfs containing math into markdown and LaTeX that can be rendered by MathJax ($$ and $ are delimiters).  It can run on CPU, GPU, or MPS.
 
 https://github.com/VikParuchuri/texify/assets/913340/882022a6-020d-4796-af02-67cb77bc084c
 
+Texify can work with block equations, or equations mixed with text (inline).  It will convert both the equations and the text.
+
 The closest open source comparisons to texify are [pix2tex](https://github.com/lukas-blecher/LaTeX-OCR) and [nougat](https://github.com/facebookresearch/nougat), although they're designed for different purposes:
 
-- Pix2tex is designed for block LaTeX equations, and hallucinates more on text.  Texify can work with inline equations and text.
-- Nougat is designed to OCR entire pages, and hallucinates more on small images. Texify is optimized for equations and small page regions.
+- Pix2tex is designed only for block LaTeX equations, and hallucinates more on text.
+- Nougat is designed to OCR entire pages, and hallucinates more on small images only containing math.
 
-Pix2tex is trained on im2latex, and nougat is trained on arxiv.  Texify is trained on a broader set of web data, and works on a range of images.
+Pix2tex is trained on im2latex, and nougat is trained on arxiv.  Texify is trained on a more diverse set of web data, and works on a range of images.
 
 See more details in the [benchmarks](#benchmarks) section.
 
@@ -37,9 +39,13 @@ where the integral over the surface of cell $\mathcal{C}_ {j}$ only depends on $
 
 # Installation
 
-This has been tested on Mac and Linux (Ubuntu and Debian).  You'll need python 3.10+ and PyTorch. You may need to install the CPU version of torch first if you're not using a Mac or a GPU machine.  See [here](https://pytorch.org/get-started/locally/) for more details.
+You'll need python 3.10+ and PyTorch. You may need to install the CPU version of torch first if you're not using a Mac or a GPU machine.  See [here](https://pytorch.org/get-started/locally/) for more details.
 
+Install with:
+
+```
 `pip install texify`
+```
 
 Model weights will automatically download the first time you run it.
 
@@ -97,6 +103,7 @@ If you want to develop texify, you can install it manually:
 
 OCR is complicated, and texify is not perfect.  Here are some known limitations:
 
+- The OCR is dependent on how you crop the image.  If you get bad results, try a different selection/crop.  Or try changing the `TEMPERATURE` setting.
 - Texify will OCR equations and surrounding text, but is not good for general purpose OCR.  Think sections of a page instead of a whole page.
 - Texify was mostly trained with 96 DPI images, and only at a max 420x420 resolution.  Very wide or very tall images may not work well.
 - It works best with English, although it should support other languages with similar character sets.
@@ -120,7 +127,7 @@ Although this makes the benchmark results biased, it does seem like a good compr
 |---------|--------------|--------------|-----------------|
 | pix2tex | 0.382659     | 0.543363     | 0.352533        |
 | nougat  | 0.697667     | 0.668331     | 0.288159        |
-| texify  | **0.837895** | **0.865492** | **0.0842209**   |
+| texify  | **0.842349** | **0.885731** | **0.0651534**   |
 
 ## Running your own benchmarks
 

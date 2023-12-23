@@ -6,6 +6,7 @@ from functools import partial
 
 import evaluate
 from tabulate import tabulate
+from tqdm import tqdm
 
 from texify.inference import batch_inference
 from texify.model.model import load_model
@@ -62,7 +63,7 @@ def inference_texify(source_data, model, processor):
     images = load_images(source_data)
 
     write_data = []
-    for i in range(0, len(images), settings.BATCH_SIZE):
+    for i in tqdm(range(0, len(images), settings.BATCH_SIZE), desc="Texify inference"):
         batch = images[i:i+settings.BATCH_SIZE]
         text = batch_inference(batch, model, processor)
         for j, t in enumerate(text):
@@ -78,7 +79,7 @@ def inference_pix2tex(source_data):
 
     images = load_images(source_data)
     write_data = []
-    for i in range(len(images)):
+    for i in tqdm(range(len(images)), desc="Pix2tex inference"):
         try:
             text = model(images[i])
         except ValueError:
@@ -127,7 +128,7 @@ def inference_nougat(source_data, batch_size=1):
         shuffle=False,
     )
 
-    for idx, sample in enumerate(dataloader):
+    for idx, sample in tqdm(enumerate(dataloader), desc="Nougat inference", total=len(dataloader)):
         model.config.max_length = settings.MAX_TOKENS
         model_output = model.inference(image_tensors=sample, early_stopping=False)
         output = [markdown_compatible(o) for o in model_output["predictions"]]

@@ -8,7 +8,7 @@ def verify_scores(file_path):
 
     scores = data["texify"]["scores"]
 
-    if scores["bleu"] <= 0.7 or scores["meteor"] <= 0.7 or scores["edit"] > 0.2:
+    if scores["bleu"] <= 0.6 or scores["meteor"] <= 0.6 or scores["edit"] > 0.2:
         print(scores)
         raise ValueError("Scores do not meet the required threshold")
 

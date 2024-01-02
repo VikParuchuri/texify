@@ -21,15 +21,11 @@ See more details in the [benchmarks](#benchmarks) section.
 
 ## Examples
 
-**Note** I added spaces after _ symbols because [Github math formatting is broken](https://github.com/github/markup/issues/1575).
+**Note** I added spaces after _ symbols and removed \, because [Github math formatting is broken](https://github.com/github/markup/issues/1575).
 
 ![Example 0](data/examples/0.png)
 
-**Detected Text** The potential $V_{i}$ of cell $\mathcal{C}_ {j}$ centred at position $\mathbf{r}_ {i}$ is related to the surface charge densities $\sigma_ {j}$ of cells $\mathcal{E}_ {j}$ $j\in[1,N]$ through the superposition principle as:
-
-$$V_ {i}\,=\,\sum_ {j=0}^{N}\,\frac{\sigma_ {j}}{4\pi\varepsilon_ {0}}\,\int_{\mathcal{E}_ {j}}\frac{1}{\left|\mathbf{r}_ {i}-\mathbf{r}^{\prime}\right|}\,\mathrm{d}^{2}\mathbf{r}^{\prime}\,=\,\sum_{j=0}^{N}\,Q_ {ij}\,\sigma_{j},$$
-
-where the integral over the surface of cell $\mathcal{C}_ {j}$ only depends on $\mathcal{C}{j}$ shape and on the relative position of the target point $\mathbf{r}_ {i}$ with respect to $\mathcal{C}_ {j}$ location, as $\sigma_ {j}$ is assumed constant over the whole surface of cell $\mathcal{C}_ {j}$.
+**Detected Text** The potential $V_ i$ of cell $\mathcal{C}_ i$ centred at position $\mathbf{r}_ i$ is related to the surface charge densities $\sigma_ j$ of cells $\mathcal{C}_ j$ $j\in[1,N]$ through the superposition principle as: $$V_ i = \sum_ {j=0}^{N} \frac{\sigma_ j}{4\pi\varepsilon_ 0} \int_ {\mathcal{C}_ j} \frac{1}{|\mathbf{r}_ i-\mathbf{r}'|} \mathrm{d}^2\mathbf{r}' = \sum_{j=0}^{N} Q_ {ij} \sigma_ j,$$ where the integral over the surface of cell $\mathcal{C}_ j$ only depends on $\mathcal{C}_ j$ shape and on the relative position of the target point $\mathbf{r}_ i$ with respect to $\mathcal{C}_ j$ location, as $\sigma_ j$ is assumed constant over the whole surface of cell $\mathcal{C}_ j$.
 
 | Image                      | OCR Markdown              |
 |----------------------------|---------------------------|
@@ -39,7 +35,7 @@ where the integral over the surface of cell $\mathcal{C}_ {j}$ only depends on $
 
 # Installation
 
-You'll need python 3.10+ and PyTorch. You may need to install the CPU version of torch first if you're not using a Mac or a GPU machine.  See [here](https://pytorch.org/get-started/locally/) for more details.
+You'll need python 3.9+ and PyTorch. You may need to install the CPU version of torch first if you're not using a Mac or a GPU machine.  See [here](https://pytorch.org/get-started/locally/) for more details.
 
 Install with:
 
@@ -80,6 +76,7 @@ texify /path/to/folder_or_file --max 8 --json_path results.json
 
 - `--max` is how many images in the folder to convert at most.  Omit this to convert all images in the folder.
 - `--json_path` is an optional path to a json file where the results will be saved.  If you omit this, the results will be saved to `data/results.json`.
+- `--katex_compatible` will make the output more compatible with KaTeX.
 
 ## Import and run
 
@@ -96,6 +93,8 @@ processor = load_processor()
 img = Image.open("test.png") # Your image name here
 results = batch_inference([img], model, processor)
 ```
+
+See `texify/output.py:replace_katex_invalid` if you want to make the output more compatible with KaTeX.
 
 # Manual install
 

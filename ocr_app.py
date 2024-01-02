@@ -9,19 +9,12 @@ import pypdfium2
 from texify.inference import batch_inference
 from texify.model.model import load_model
 from texify.model.processor import load_processor
-from texify.settings import settings
-import subprocess
-import re
+from texify.output import replace_katex_invalid
 from PIL import Image
 
-MAX_WIDTH = 1000
+MAX_WIDTH = 800
+MAX_HEIGHT = 1000
 
-
-def replace_katex_invalid(string):
-    # KaTeX cannot render all LaTeX, so we need to replace some things
-    string = re.sub(r'\\tag\{.*?\}', '', string)
-    string = re.sub(r'\\Big\{(.*?)\}|\\big\{(.*?)\}', r'\1\2', string)
-    return string
 
 @st.cache_resource()
 def load_model_cached():
@@ -63,6 +56,12 @@ def get_uploaded_image(in_file):
     return Image.open(in_file).convert("RGB")
 
 
+def resize_image(pil_image):
+    if pil_image is None:
+        return
+    pil_image.thumbnail((MAX_WIDTH, MAX_HEIGHT), Image.Resampling.LANCZOS)
+
+
 @st.cache_data()
 def page_count(pdf_file):
     doc = open_pdf(pdf_file)
@@ -76,12 +75,8 @@ def get_canvas_hash(pil_image):
 @st.cache_data()
 def get_image_size(pil_image):
     if pil_image is None:
-        return 800, 600
+        return MAX_HEIGHT, MAX_WIDTH
     height, width = pil_image.height, pil_image.width
-    if width > MAX_WIDTH:
-        scale = MAX_WIDTH / width
-        height = int(height * scale)
-        width = MAX_WIDTH
     return height, width
 
 
@@ -114,6 +109,9 @@ if "pdf" in filetype:
 else:
     pil_image = get_uploaded_image(in_file)
     whole_image = st.sidebar.button("OCR image")
+
+# Resize to max bounds
+resize_image(pil_image)
 
 temperature = st.sidebar.slider("Generation temperature:", min_value=0.0, max_value=1.0, value=0.0, step=0.05)
 

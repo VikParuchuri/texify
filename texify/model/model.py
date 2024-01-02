@@ -10,16 +10,14 @@ from texify.model.config import VariableDonutSwinConfig, get_config
 from texify.settings import settings
 
 
-def load_model():
-    config = get_config(settings.MODEL_CHECKPOINT)
+def load_model(checkpoint=settings.MODEL_CHECKPOINT, device=settings.TORCH_DEVICE_MODEL, dtype=settings.MODEL_DTYPE):
+    config = get_config(checkpoint)
     AutoModel.register(VariableDonutSwinConfig, VariableDonutSwinModel)
 
-    dtype = settings.MODEL_DTYPE
-    device = settings.TORCH_DEVICE_MODEL
-    model = VisionEncoderDecoderModel.from_pretrained(settings.MODEL_CHECKPOINT, config=config, torch_dtype=dtype)
+    model = VisionEncoderDecoderModel.from_pretrained(checkpoint, config=config, torch_dtype=dtype)
     model = model.to(device)
     model = model.eval()
-    print(f"Loaded model to {device} with {dtype} dtype")
+    print(f"Loaded texify model to {device} with {dtype} dtype")
     return model
 
 

@@ -61,6 +61,7 @@ Model weights will automatically download the first time you run it.
 I've included a streamlit app that lets you interactively select and convert equations from images or PDF files.  Run it with:
 
 ```
+pip install streamlit streamlit-drawable-canvas-jsretry watchdog
 texify_gui
 ```
 
@@ -145,6 +146,7 @@ You can benchmark the performance of texify on your machine.
 - Run `benchmark.py` like this:
 
 ```
+pip install tabulate
 python benchmark.py --max 100 --pix2tex --nougat --data_path data/bench_data.json --result_path data/bench_results.json
 ```
 

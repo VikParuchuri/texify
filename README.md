@@ -29,9 +29,9 @@ See more details in the [benchmarks](#benchmarks) section.
 
 | Image                      | OCR Markdown              |
 |----------------------------|---------------------------|
-| [1](data/examples/100.png) | [1](data/examples/100.md) |
-| [2](data/examples/300.png) | [2](data/examples/300.md) |
-| [3](data/examples/400.png) | [3](data/examples/400.md) |
+| [1](https://github.com/VikParuchuri/texify/tree/master/data/examples/100.png) | [1](https://github.com/VikParuchuri/texify/tree/master/data/examples/100.md) |
+| [2](https://github.com/VikParuchuri/texify/tree/master/data/examples/300.png) | [2](https://github.com/VikParuchuri/texify/tree/master/data/examples/300.md) |
+| [3](https://github.com/VikParuchuri/texify/tree/master/data/examples/400.png) | [3](https://github.com/VikParuchuri/texify/tree/master/data/examples/400.md) |
 
 # Installation
 

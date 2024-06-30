@@ -1,3 +1,6 @@
+import os
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1" # For some reason, transformers decided to use .isin for a simple op, which is not supported on MPS
+
 from torch import nn
 import torch
 from typing import Optional, Tuple
@@ -26,7 +29,7 @@ class VariableDonutSwinEmbeddings(DonutSwinEmbeddings):
     Construct the patch and position embeddings. Optionally, also the mask token.
     """
 
-    def __init__(self, config, use_mask_token=False):
+    def __init__(self, config, use_mask_token=False, **kwargs):
         super().__init__(config, use_mask_token)
 
         self.patch_embeddings = DonutSwinPatchEmbeddings(config)
@@ -48,7 +51,7 @@ class VariableDonutSwinEmbeddings(DonutSwinEmbeddings):
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
     def forward(
-        self, pixel_values: Optional[torch.FloatTensor], bool_masked_pos: Optional[torch.BoolTensor] = None
+        self, pixel_values: Optional[torch.FloatTensor], bool_masked_pos: Optional[torch.BoolTensor] = None, **kwargs
     ) -> Tuple[torch.Tensor]:
 
         embeddings, output_dimensions = self.patch_embeddings(pixel_values)
@@ -80,7 +83,7 @@ class VariableDonutSwinEmbeddings(DonutSwinEmbeddings):
 class VariableDonutSwinModel(DonutSwinModel):
     config_class = VariableDonutSwinConfig
 
-    def __init__(self, config, add_pooling_layer=True, use_mask_token=False):
+    def __init__(self, config, add_pooling_layer=True, use_mask_token=False, **kwargs):
         super().__init__(config)
         self.config = config
         self.num_layers = len(config.depths)

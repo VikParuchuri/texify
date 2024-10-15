@@ -5,19 +5,22 @@ from torch import nn
 import torch
 from typing import Optional, Tuple
 
-from transformers import AutoModel, VisionEncoderDecoderModel
+from transformers import AutoModel, VisionEncoderDecoderModel, GenerationMixin
 from transformers.models.donut.modeling_donut_swin import DonutSwinPatchEmbeddings, DonutSwinEmbeddings, DonutSwinModel, \
     DonutSwinEncoder
 
 from texify.model.config import VariableDonutSwinConfig, get_config
 from texify.settings import settings
 
+class GenerateVisionEncoderDecoderModel(VisionEncoderDecoderModel, GenerationMixin):
+    pass
+
 
 def load_model(checkpoint=settings.MODEL_CHECKPOINT, device=settings.TORCH_DEVICE_MODEL, dtype=settings.MODEL_DTYPE):
     config = get_config(checkpoint)
     AutoModel.register(VariableDonutSwinConfig, VariableDonutSwinModel)
 
-    model = VisionEncoderDecoderModel.from_pretrained(checkpoint, config=config, torch_dtype=dtype)
+    model = GenerateVisionEncoderDecoderModel.from_pretrained(checkpoint, config=config, torch_dtype=dtype)
     model = model.to(device)
     model = model.eval()
     print(f"Loaded texify model to {device} with {dtype} dtype")

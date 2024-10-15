@@ -20,7 +20,7 @@ IMAGE_MEAN = [0.485, 0.456, 0.406]
 
 
 def load_processor():
-    AutoImageProcessor.register(VariableDonutSwinConfig, VariableDonutImageProcessor)
+    AutoImageProcessor.register(VariableDonutSwinConfig, slow_image_processor_class=VariableDonutImageProcessor)
     processor = VariableDonutProcessor.from_pretrained(settings.MODEL_CHECKPOINT)
     processor.image_processor.max_size = settings.MAX_IMAGE_SIZE
     processor.image_processor.size = [settings.MAX_IMAGE_SIZE["height"], settings.MAX_IMAGE_SIZE["width"]]

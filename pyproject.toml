@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "texify"
-version = "0.2.0"
+version = "0.2.1"
 description = "OCR for latex images"
 authors = ["Vik Paruchuri <vik.paruchuri@gmail.com>"]
 readme = "README.md"
@@ -11,7 +11,6 @@ include = [
     "ocr_app.py",
     "ocr_image.py",
     "run_ocr_app.py",
-    "benchmark.py"
 ]
 
 [tool.poetry.dependencies]
@@ -39,7 +38,6 @@ tabulate = "^0.9.0"
 [tool.poetry.scripts]
 texify = "ocr_image:main"
 texify_gui = "run_ocr_app:run_app"
-texify_benchmark = "benchmark:main"
 
 [build-system]
 requires = ["poetry-core"]

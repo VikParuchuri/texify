@@ -5,7 +5,7 @@ from torch import nn
 import torch
 from typing import Optional, Tuple
 
-from transformers import AutoModel, VisionEncoderDecoderModel, GenerationMixin
+from transformers import AutoModel, VisionEncoderDecoderModel, GenerationMixin, PretrainedConfig, PreTrainedModel, VisionEncoderDecoderConfig, AutoModelForCausalLM
 from transformers.models.donut.modeling_donut_swin import DonutSwinPatchEmbeddings, DonutSwinEmbeddings, DonutSwinModel, \
     DonutSwinEncoder
 
@@ -13,12 +13,43 @@ from texify.model.config import VariableDonutSwinConfig, get_config
 from texify.settings import settings
 
 class GenerateVisionEncoderDecoderModel(VisionEncoderDecoderModel, GenerationMixin):
-    pass
+    def __init__(
+        self,
+        config: Optional[PretrainedConfig] = None,
+        encoder: Optional[PreTrainedModel] = None,
+        decoder: Optional[PreTrainedModel] = None,
+    ):
+        config.tie_word_embeddings = False
+        PreTrainedModel.__init__(self, config)
+
+        if encoder is None:
+            encoder = AutoModel.from_config(config.encoder)
+
+        if decoder is None:
+            decoder = AutoModelForCausalLM.from_config(config.decoder)
+
+        self.encoder = encoder
+        self.decoder = decoder
+
+        # make sure that the individual model's config refers to the shared config
+        # so that the updates to the config will be synced
+        self.config.encoder._attn_implementation = self.encoder.config._attn_implementation
+        self.config.decoder._attn_implementation = self.decoder.config._attn_implementation
+        self.encoder.config = self.config.encoder
+        self.decoder.config = self.config.decoder
+
+        # encoder outputs might need to be projected to different dimension for decoder
+        if (
+            self.encoder.config.hidden_size != self.decoder.config.hidden_size
+            and self.decoder.config.cross_attention_hidden_size is None
+        ):
+            self.enc_to_dec_proj = nn.Linear(self.encoder.config.hidden_size, self.decoder.config.hidden_size)
 
 
 def load_model(checkpoint=settings.MODEL_CHECKPOINT, device=settings.TORCH_DEVICE_MODEL, dtype=settings.MODEL_DTYPE):
     config = get_config(checkpoint)
     AutoModel.register(VariableDonutSwinConfig, VariableDonutSwinModel)
+
 
     model = GenerateVisionEncoderDecoderModel.from_pretrained(checkpoint, config=config, torch_dtype=dtype)
     model = model.to(device)
@@ -46,7 +77,7 @@ class VariableDonutSwinEmbeddings(DonutSwinEmbeddings):
 
         self.row_embeddings = None
         self.column_embeddings = None
-        if config.use_2d_embeddings:
+        if hasattr(config, "use_2d_embeddings") and config.use_2d_embeddings:
             self.row_embeddings = nn.Parameter(torch.zeros(1, self.patch_grid[0] + 1, config.embed_dim))
             self.column_embeddings = nn.Parameter(torch.zeros(1, self.patch_grid[1] + 1, config.embed_dim))
 

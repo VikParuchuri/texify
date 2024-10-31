@@ -27,7 +27,7 @@ jobs:
           mv bench_data.json data/bench_data.json
       - name: Run benchmark test
         run: |
-          poetry run texify_benchmark --max 16
+          poetry run python benchmark.py --max 16
           poetry run python scripts/verify_benchmark_scores.py data/bench_results.json
         
           

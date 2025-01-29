@@ -1,3 +1,9 @@
+> [!IMPORTANT]
+> Texify is now deprecated.  The functionality here has been migrated to [surya](https://github.com/vikParuchuri/surya), and improved with a new model.
+> To OCR equations with surya, you can install surya, then run `surya_latex_ocr` to OCR images or PDFs.
+> You can also run the interactive app (like MathPix snip) with `texify_gui`.
+> Read more, and see other CLI options [here](https://github.com/VikParuchuri/surya?tab=readme-ov-file#latex-ocr).
+
 # Texify
 
 Texify is an OCR model that converts images or pdfs containing math into markdown and LaTeX that can be rendered by MathJax ($$ and $ are delimiters).  It can run on CPU, GPU, or MPS.
